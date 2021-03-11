@@ -1,0 +1,57 @@
+Esquema del ejercicio
+Debes conocer cómo crear usuarios y otorgarles permisos.
+Vamos a trabajar accediendo a diferentes esquemas y dándoles permisos.
+Debes escribir las instrucciones y preguntas en un script SQL y entregarlo en la tarea correspondiente. Utiliza comentarios para explicar todo lo que quieras y para responder a las preguntas de forma razonada.
+Ten siempre en una ventana del navegador la referencia de SQL que puedes encontrar en el enlace proporcionado en el cv.
+Necesitarás ...
+Conceptos sobre usuarios y permisos.
+Cómo crear un tablespace.
+
+Conéctate a la base de datos como system.
+
+Si tienes un problema de caducidad del password, utiliza el comando password  (Se aconseja actualizar la contraseña sin cambiarla, para no tener problemas posteriormente de olvido).
+Comprueba que existe un tablespace denominado TS_SECRETARIA. Si no es así, créalo donde quieras. Que sea de 10M con el nombre de fichero de datos que quieras y autoextensible.
+Crea un perfil denominado PERF_ADMINISTRATIVO con 3 intentos para bloquear la cuenta y que se desconecte después de 5 minutos de inactividad
+Crea un perfil denominado PERF_ALUMNO con 4 sesiones por usuario y con una password que caduca cada 30 días. 
+Asegúrate de que las limitaciones de recursos serán efectivas sin problemas.
+Crea un role R_ADMINISTRADOR_SUPER con permiso para conectarse y crear tablas.
+Crea dos usuarios denominados USUARIO1 y USUARIO2 con perfil PERF_ADMINISTRATIVO y contraseña usuario. Otórgales el ROLE R_ADMINISTRADOR_SUPER. Asígneles Quota de 1 MB en el tablespace TS_SECRETARIA. Haz que este sea un tablespace por defecto
+En ambos usuarios crear la tabla TABLA2:
+CREATE TABLE TABLA2
+ (  CODIGO NUMBER   ) ;
+Crea el procedimiento USUARIO1.PR_INSERTA_TABLA2. Como aún no hemos visto procedimientos en ORACLE, simplemente haz un copia y pega de lo siguiente (la barra final debe escribirse también):
+ CREATE OR REPLACE PROCEDURE USUARIO1.PR_INSERTA_TABLA2 (
+                                P_CODIGO IN NUMBER) AS
+ BEGIN
+      INSERT INTO TABLA2 VALUES (P_CODIGO);
+ END PR_INSERTA_TABLA2;
+/ 
+Conéctate como USUARIO1 y Ejecútalo. ¿Funciona?. Utiliza la instrucción exec nombre_procedimiento(param); CONSEJO: Utiliza SQLPlus si no quieres crear otra conexión para el usuario en SQL Developer. Conocer SQLPlus es buena idea, porque en algunos entornos solo encontrarás el terminal SQLPlus de Oracle. Por supuesto, siempre que sea posible es más cómodo utilizar SQL Developer.
+Otórgale permisos a USUARIO2 para ejecutarlo
+Conéctate como USUARIO2 y Ejecútalo. ¿Funciona?  
+En este último caso ¿dónde se inserta el dato en la tabla de USUARIO1 o en la de USUARIO2? ¿Por qué?
+Cambiar el procedimiento para que el INSERT lo haga desde un EXECUTE IMMEDIATE. Es decir, vuelve a crear el procedimiento según vimos en el punto anterior pero sustituyendo la linea correspondiente al INSERT por         execute immediate 'INSERT INTO TABLA2 VALUES ('||P_CODIGO||')';
+Ejecutar desde USUARIO1. ¿Funciona?
+Ejecutar desde USUARIO2. ¿Funciona?
+Crear otro procedimiento en USUARIO1:
+CREATE OR REPLACE PROCEDURE PR_CREA_TABLA (
+  P_TABLA IN VARCHAR2, P_ATRIBUTO IN VARCHAR2) AS
+BEGIN
+  EXECUTE IMMEDIATE 'CREATE TABLE '||P_TABLA||'('||P_ATRIBUTO||' NUMBER(9))';
+ END PR_CREA_TABLA;
+/
+Ejecutar desde USUARIO1. ¿Funciona?
+Asignemos permisos explícitos (y no a través de un rol como está ahora) de creación de tablas al USUARIO1. Asignar permisos de ejecución sobre el procedimiento anterior al USUARIO2.
+Ejecutar desde USUARIO2. ¿Funciona?
+Vamos ahora a comprobar cómo está la instalación de ORACLE que tenemos delante. En primer lugar, en una configuración óptima deberíamos conocer cuales son las cuentas que aún tienen su password por defecto (lo cual es una mala práctica desde el punto de vista de seguridad). Consulta para ello la vista de diccionario DBA_USERS_WITH_DEFPWD. Ahora, responde: ¿por qué hay tantas cuentas? ¿tan insegura es ORACLE tras la instalación? PISTA: Utiliza esa vista en combinación con otras que te permita estudiar el estado (si se pueden conectar, si están abiertas o bloqueadas, etc.) de esas cuentas.
+Sabemos que existe un profile por defecto para la creación usuarios. Vamos a modificarlo de manera que todos los usuarios cumplan una política mínima para la gestión de contraseñas al ser creados. 
+- En primer lugar consulta cuales son los parámetros existentes del profile por defecto (la vista DBA_PROFILES puede ayudarte). Cuales son?
+- Cambia el número de logins fallidos a 4 y el tiempo de gracia a 5
+- Con el usuario1 haz 4 logins fallidos. ¿Que ocurre la quinta vez?
+- Desbloquea la cuenta (alter user...)
+- A pesar de que hayamos cambiado el parámetro de failed_login_attempts, si consultamos el parámetro de inicialización sec_max_failed_login_attempts (con show parameter...) aparece un valor diferente. Significan por tanto diferentes cosas. ¿Para qué es útil cada uno?
+- Investiga si existe una forma de "quitar" los perfiles que hemos creado al principio. ¿Se puede hacer con todos los perfiles de oracle?
+
+Una última pregunta. Algunos parámetros de inicialización son dinámicos, y otros estáticos. ¿Cual es la diferencia entre ellos?
+
+Si has llegado hasta aquí..ENHORABUENA!!

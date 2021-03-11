@@ -68,5 +68,5 @@ alter user USUARIO1 ACCOUNT UNLOCK;
 show parameter sec_max_failed_login_attempts;
 drop profile PERF_ADMINISTRATIVO cascade;
 drop profile PERF_ALUMNO;
---los datos estáticos necesitan un reinicioe en la bd para que se aplique
+--los datos estáticos necesitan un reinicio en la bd para que se aplique
 --en cambio en los dinámicos no pasa esto

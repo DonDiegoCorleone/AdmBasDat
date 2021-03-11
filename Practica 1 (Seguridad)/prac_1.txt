@@ -1,0 +1,72 @@
+--3
+create tablespace "TS_SECRETARIA" datafile 'cecretaria.dbf' size 10M autoextend on;
+--4
+create profile "PERF_ADMINISTRATIVO" limit failed_login_attempts 3 idle_time 5;
+--5
+create profile "PERF_ALUMNO" limit sessions_per_user 4 password_life_time 30;
+--6
+alter system set resource_limit=true;
+--7
+create role "R_ADMINISTRADOR_SUPER";
+grant create session, create table to "R_ADMINISTRADOR_SUPER";
+--8
+create user USUARIO1 identified by usuario profile PERF_ADMINISTRATIVO 
+default tablespace TS_SECRETARIA quota 1M on TS_SECRETARIA;
+create user USUARIO2 identified by usuario profile PERF_ADMINISTRATIVO 
+default tablespace TS_SECRETARIA quota 1M on TS_SECRETARIA;
+grant R_ADMINISTRADOR_SUPER to USUARIO1, USUARIO2;
+--9
+create table USUARIO1.TABLA2(CODIGO NUMBER);
+create table USUARIO2.TABLA2(CODIGO NUMBER);
+--10
+create or replace procedure USUARIO1.PR_INSERTA_TABLA2(P_CODIGO IN NUMBER) AS
+BEGIN INSERT INTO TABLA2 VALUES(P_CODIGO);
+END PR_INSERTA_TABLA2;
+/
+--11 EN SQL PLUS y si funciona
+EXEC PR_INSERTA_TABLA2(9);
+--12
+grant execute on USUARIO1.PR_INSERTA_TABLA2 to USUARIO2;
+--13 funciona
+--14 Se inserta en la tabla de usuario1, porque es la que se utiliza en el
+-- procedimiento
+--15
+create or replace procedure USUARIO1.PR_INSERTA_TABLA2(P_CODIGO IN NUMBER) AS
+BEGIN execute immediate 'INSERT INTO TABLA2 VALUES('||P_CODIGO||')'; 
+END PR_INSERTA_TABLA2;
+/
+--16 Funciona
+--17 Funciona
+--18
+create or replace procedure USUARIO1.PR_CREA_TABLA(
+P_TABLA IN VARCHAR2,P_ATRIBUTO IN VARCHAR2) AS BEGIN
+EXECUTE IMMEDIATE 'CREATE TABLE '||P_TABLA||'('||P_ATRIBUTO||' NUMBER(9))';
+END PR_CREA_TABLA;
+/
+--19 Da error
+/*
+ERROR en l›nea 1:
+ORA-01031: privilegios insuficientes
+ORA-06512: en "USUARIO1.PR_CREA_TABLA", l›nea 3
+ORA-06512: en l›nea 1
+*/
+--20
+grant create table to USUARIO1;
+grant execute on USUARIO1.PR_CREA_TABLA to USUARIO2;
+--21 Si funciona
+--22
+select * from DBA_USERS_WITH_DEFPWD;
+select * from sys.dba_users;
+select * from dba_users du,dba_users_with_defpwd dv, sys.dba_role_privs rv
+where du.username=dv.username and
+rv.granted_role='CONNECT' AND
+du.account_status='OPEN';
+--23
+select * from dba_profiles;
+alter profile default limit failed_login_attempts 4 password_grace_time 5;
+alter user USUARIO1 ACCOUNT UNLOCK;
+show parameter sec_max_failed_login_attempts;
+drop profile PERF_ADMINISTRATIVO cascade;
+drop profile PERF_ALUMNO;
+--los datos est·ticos necesitan un reinicioe en la bd para que se aplique
+--en cambio en los din·micos no pasa esto

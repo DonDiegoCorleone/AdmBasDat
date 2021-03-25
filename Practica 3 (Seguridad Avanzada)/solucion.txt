@@ -1,0 +1,107 @@
+--creamos el espacio de tabala secretaria
+
+select * from user_tablespaces;
+
+create tablespace TS_SECRETARIA datafile
+'secretaria.dbf' size 10M autoextend on;
+
+create user USUARIO1 identified by usuario 
+default tablespace  TS_SECRETARIA quota 1M on TS_SECRETARIA;
+
+grant connect, create on TABLA1 to USUARIO1;
+--5
+create table USUARIO1.TABLA1(
+Nombre VARCHAR2(20),
+Apellido1 VARCHAR2(20),
+Id  NUMBER(2) ENCRYPT
+);
+--6
+select * from dba_encrypted_columns;
+--7
+insert  into USUARIO1.TABLA1 values('Diego','Centeno',9);
+insert  into USUARIO1.TABLA1 values('Javier','Quirante',200);
+insert  into USUARIO1.TABLA1 values('Roberto','Navarro',1);
+
+alter system flush buffer_cache;
+
+--se encuentran los nombres y apellidos pero el dni no ya que está encriptado
+--8
+
+alter table USUARIO1.TABLA1 add (user_name VARCHAR2(20));
+
+create or replace function USUARIO1.sec_function(TS_SECRETARIA VARCHAR2,p_obj VARCHAR2)
+return VARCHAR2 is usuario VARCHAR2(100);
+BEGIN
+usuario :=SYS_CONTEXT('userenv','SESSION_USER');
+return 'UPPER(user_name)=''' ||usuario|| '''';
+End;
+/
+
+--9
+insert  into USUARIO1.TABLA1 values('Antonio','Galan',9,'15Galan');
+insert  into USUARIO1.TABLA1 values('Manolo','Galan',15,'USUARIO1');
+insert  into USUARIO1.TABLA1 values('javi','Guerrero',15,'USUARIO2');
+
+BEGIN
+dbms_rls.add_policy
+(object_schema=>'USUARIO1',
+object_name=>'TABLA1',
+policy_name=>'EMP_POLICY',
+function_schema=>'USUARIO1',
+policy_function=>'SEC_FUNCTION');
+end;
+/
+
+--10
+
+create user USUARIO2 identified by usuario 
+default tablespace  TS_SECRETARIA quota 1M on TS_SECRETARIA;
+
+grant connect to USUARIO2;
+grant select on USUARIO1.TABLA1 to USUARIO2;
+grant update on USUARIO1.TABLA1 to USUARIO2;
+
+--11
+-- solo se enseña la de javi ya que tiene el usuario2
+select * from USUARIO1.TABAL1;
+
+--12
+--se puede hacer update a usuario2, pero no a los demas
+
+update USUARIO1.TABLA1 SET user_name='Wiyo' where Id=1; 
+
+--eliminamos la politica
+
+--13
+--no, no
+BEGIN
+dbms_rls.drop_policy(
+object_name=>'TABLA1',
+object_schema=>'USUARIO1',
+policy_name=>'EMP_POLICY');
+end;
+/
+
+--14
+--activamos el update check
+BEGIN
+dbms_rls.add_policy
+(object_schema=>'USUARIO1',
+update_check=>true,
+object_name=>'TABLA1',
+policy_name=>'EMP_POLICY',
+function_schema=>'USUARIO1',
+policy_function=>'SEC_FUNCTION');
+end;
+/
+--15
+BEGIN
+dbms_rls.add_policy
+(object_schema=>'USUARIO1',
+object_name=>'TABLA1',
+policy_name=>'EMP_POLICY',
+function_schema=>'USUARIO1',
+policy_function=>'SEC_FUNCTION',
+sec_relevant_cols=>'Apellido1');
+end;
+/

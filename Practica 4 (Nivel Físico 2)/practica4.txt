@@ -1,0 +1,57 @@
+El tablespace TS_SECRETARIA ya está creado de la práctica anterior
+
+--desde SYSTEM
+
+create user secretaria identified by bd default tablespace TS_SECRETARIA QUOTA 5M ON TS_SECRETARIA;
+grant all privileges to secretaria; 
+create tablespace TS_INDICES datafile 'ts_indices.dbf' size 50M;
+select * from dba_tablespaces;
+select username,default_tablespace from dba_users;
+select * from v$datafile;
+
+
+--desde SECRETARIA
+
+create table alumnos_ext(DOCUMENTO	VARCHAR2(200),
+NOMBRE	VARCHAR2(200),
+"1º APELLIDO" VARCHAR2(200),
+"2º APELLIDO" VARCHAR2(200),
+"Nº EXPEDIENTE" VARCHAR2(200),
+"Nº ARCHIVO" VARCHAR2(200),
+EMAIL_INSTITUCIONAL	VARCHAR2(200),
+EMAIL_PERSONAL	VARCHAR2(200),
+TELEFONO	VARCHAR2(200),
+MOVIL	VARCHAR2(200),
+DIRECCION_NOTIFICACION	VARCHAR2(200),
+LOCALIDAD_NOTIFICACION	VARCHAR2(200),
+PROVINCIA_NOTIFICACION	VARCHAR2(200),
+CP_NOTIFICACION	VARCHAR2(200),
+FECHA_MATRICULA	VARCHAR2(200),
+TURNO_PREFERENTE	VARCHAR2(200),
+GRUPOS_ASIGNADOS	VARCHAR2(200),
+NOTA_MEDIA	VARCHAR2(200),
+CREDITOS_SUPERADOS	VARCHAR2(200),
+CREDITOS_FB	VARCHAR2(200),
+CREDITOS_OB	VARCHAR2(200),
+CREDITOS_OP	VARCHAR2(200),
+CREDITOS_CF	VARCHAR2(200),
+CREDITOS_PE	VARCHAR2(200),
+CREDITOS_TF	VARCHAR2(200)
+)
+organization external
+(default directory directorio_ext
+access parameters 
+(records delimited by newline
+skip 4
+    fields terminated by ';'
+)
+location('alumnos.csv'));
+
+select * from alumnos_ext;
+
+CREATE SEQUENCE SECRETARIA.SEQUENCE_ALUMNO_ID MINVALUE 1 INCREMENT BY 1;
+
+insert into alumno select SEQUENCE_ALUMNO_ID.NEXTVAL,documento,nombre,
+"1º APELLIDO","2º APELLIDO","Nº EXPEDIENTE","Nº ARCHIVO",email_institucional,email_personal,
+telefono,movil,direccion_notificacion,localidad_notificacion,provincia_notificacion,
+cp_notificacion,fecha_matricula,turno_preferente,grupos_asignados,nota_media,

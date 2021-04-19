@@ -49,9 +49,20 @@ location('alumnos.csv'));
 
 select * from alumnos_ext;
 
-CREATE SEQUENCE SECRETARIA.SEQUENCE_ALUMNO_ID MINVALUE 1 INCREMENT BY 1;
-
-insert into alumno select SEQUENCE_ALUMNO_ID.NEXTVAL,documento,nombre,
+insert into alumno select documento,nombre,
 "1º APELLIDO","2º APELLIDO","Nº EXPEDIENTE","Nº ARCHIVO",email_institucional,email_personal,
 telefono,movil,direccion_notificacion,localidad_notificacion,provincia_notificacion,
 cp_notificacion,fecha_matricula,turno_preferente,grupos_asignados,nota_media,
+creditos_superados,creditos_FB,creditos_OB,creditos_OP,creditos_CF,creditos_PE,creditos_TF
+from alumnos_ext;
+
+//Paso 5
+
+select table_name,tablespace_name from user_tables where table_name = 'ALUMNO';
+select index_name,tablespace_name from user_indexes;
+
+create bitmap index idx_curso ON asig(curso) tablespace TS_INDICES; 
+create bitmap index idx_caracter ON asig(caracter) tablespace TS_INDICES;
+create bitmap index idx_cuat ON asig(duracion) tablespace TS_INDICES; 
+
+SELECT * FROM USER_INDEXES WHERE INDEX_TYPE='BITMAP';

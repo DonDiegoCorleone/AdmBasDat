@@ -1,10 +1,17 @@
-El tablespace TS_SECRETARIA ya está creado de la práctica anterior
+El tablespace TS_SECRETARIA ya estÃ¡ creado de la prÃ¡ctica anterior
 
 --1.CREACION DEL USUARIO TABLESPACE
 --desde SYSTEM
 
 create user secretaria identified by bd default tablespace TS_SECRETARIA QUOTA 5M ON TS_SECRETARIA;
-grant all privileges to secretaria; 
+GRANT
+    CONNECT,
+    CREATE TABLE,
+    CREATE VIEW,
+    CREATE PROCEDURE,
+    CREATE SEQUENCE,
+    CREATE MATERIALIZED VIEW
+        TO secretaria;
 create tablespace TS_INDICES datafile 'ts_indices.dbf' size 50M;
 select * from dba_tablespaces;
 select username,default_tablespace from dba_users;
@@ -324,10 +331,10 @@ ALTER TABLE titu_opt
 --4.TABLAS EXTERNAS
 create table alumnos_ext(DOCUMENTO	VARCHAR2(200),
 NOMBRE	VARCHAR2(200),
-"1º APELLIDO" VARCHAR2(200),
-"2º APELLIDO" VARCHAR2(200),
-"Nº EXPEDIENTE" VARCHAR2(200),
-"Nº ARCHIVO" VARCHAR2(200),
+"1Âº APELLIDO" VARCHAR2(200),
+"2Âº APELLIDO" VARCHAR2(200),
+"NÂº EXPEDIENTE" VARCHAR2(200),
+"NÂº ARCHIVO" VARCHAR2(200),
 EMAIL_INSTITUCIONAL	VARCHAR2(200),
 EMAIL_PERSONAL	VARCHAR2(200),
 TELEFONO	VARCHAR2(200),
@@ -361,7 +368,7 @@ select * from alumnos_ext;
 
 insert into alumno select 
 documento,nombre,
-"1º APELLIDO","2º APELLIDO","Nº EXPEDIENTE","Nº ARCHIVO",email_institucional,email_personal,
+"1Âº APELLIDO","2Âº APELLIDO","NÂº EXPEDIENTE","NÂº ARCHIVO",email_institucional,email_personal,
 telefono,movil,direccion_notificacion,localidad_notificacion,provincia_notificacion,
 cp_notificacion,fecha_matricula,turno_preferente,grupos_asignados,nota_media,
 creditos_superados,creditos_FB,creditos_OB,creditos_OP,creditos_CF,creditos_PE,creditos_TF

@@ -18,3 +18,45 @@ SELECT CODIGO INTO cod_titu from TITU where NOMBRE LIKE Titulacion;
 SELECT ID INTO cod_gr from GRUPO where CURSO LIKE Curso and LETRA LIKE Letra and TITU_CODIGO LIKE cod_titu;
 RETURN to_char(cod_gr);
 END OBTEN_GRUPO_ID;
+--3
+CREATE GLOBAL TEMPORARY TABLE "SECRETARIA"."TEMP_ASIGNATURAS"
+("CODIGO" NUMBER, GRUPO VARCHAR2(10)
+) ON COMMIT DELETE ROWS;
+--4 version burrada
+CREATE OR REPLACE PROCEDURE normaliza_asignaturas
+(pcadena varchar2, Titulacion varchar2 DEFAULT NULL)
+as
+p NUMBER;
+cod VARCHAR2(20);
+coma NUMBER;
+guion NUMBER;
+grupo_id VARCHAR2(200);
+letra VARCHAR2(20);
+BEGIN
+p:=1;
+coma:=instr(pcadena,',');
+guion:=instr(pcadena,'-');
+WHILE P<LENGTH(pcadena) LOOP
+cod:=SUBSTR(pcadena,p,guion-1);
+if(coma!=0)then
+if(guion+1!=coma) then
+letra:=SUBSTR(pcadena,guion+1,coma-1);
+grupo_id:=OBTEN_GRUPO_ID(Titulacion,substr(cod,1,1),letra);
+else
+letra:=null;
+end if;
+p:=coma+1;
+coma:=instr(SUBSTR(pcadena,coma+1),',');
+guion:=instr(SUBSTR(pcadena,guion+1),'-');
+else
+p:=LENGTH(pcadena);
+if(p=guion)then
+letra:=null;
+else
+letra:=SUBSTR(pcadena,guion+1);
+grupo_id:=OBTEN_GRUPO_ID(Titulacion,substr(cod,1,1),letra);
+end if;
+end if;
+insert into "SECRETARIA"."TEMP_ASIGNATURAS" values (cod,grupo_id);
+END LOOP;
+END;

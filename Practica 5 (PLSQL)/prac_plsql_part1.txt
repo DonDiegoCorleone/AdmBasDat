@@ -48,12 +48,20 @@ from dual connect by regexp_substr('pcadena', '[^,]+', 1, level) is not null));
          COD := substr(BLOQUE,1,GUION-1);
          LETRA := substr(BLOQUE,GUION+1, 1);
          
+	 IF (LETRA!=NULL) THEN
+
          GRUPO_ID := OBTEN_GRUPO_ID(Titulacion, substr(COD,1,1), letra);
 
-         insert into "SECRETARIA"."TEMP_ASIGNATURAS" values (COD, GRUPO_ID);
-
+         
+	 ELSE
+	 GRUPO_ID :=NULL;
+	 END IF;
+	 
+	 insert into "SECRETARIA"."TEMP_ASIGNATURAS" values (COD, GRUPO_ID);
+	
          CONTADOR := CONTADOR + 1; 
          END LOOP;
 
 END NORMALIZA_ASIGNATURAS;
 /
+--5

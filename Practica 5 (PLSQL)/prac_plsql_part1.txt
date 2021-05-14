@@ -68,3 +68,24 @@ insert into "SECRETARIA"."TEMP_ASIGNATURAS" values (cod,grupo_id);
 END LOOP;
 END NORMALIZA_ASIGNATURAS;
 --5
+create or replace procedure RELLENA_ASIG_MATRICULA
+AS
+ref Varchar2(20);
+curso Varchar2(20);
+grupo Varchar2(20);
+exp Varchar2(20);
+titu number;
+cursor c_calumnos is SELECT GRUPOS_ASIGNADOS, n_expediente FROM ALUMNOS_EXT;
+cursor c_cgrupos is SELECT codigo, grupo FROM temp_asignaturas;
+BEGIN
+
+    FOR Var_asignaturas IN c_calumnos LOOP
+        titu := substr(to_char(VAr_asignaturas.n_expediente), 1, 4);
+        NORMALIZA_ASIGNATURAS(Var_asignaturas.grupos_asignados, titu);
+         FOR Var_codigo IN c_cgrupos LOOP
+            select referencia into ref from asig where codigo_1=Var_codigo.codigo and titu_codigo=titu;
+            curso := curso_actual;
+            insert into ASIG_MATR (MATR_CURSO, MATR_EXP_NUM, ASIG_REFERENCIA, GRUPO_ID) values (curso, exp, ref, Var_codigo.grupo);
+        END LOOP;
+    END LOOP;
+END RELLENA_ASIG_MATRICULA;

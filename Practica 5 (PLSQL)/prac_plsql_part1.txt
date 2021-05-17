@@ -80,7 +80,7 @@ cursor c_cgrupos is SELECT codigo, grupo FROM temp_asignaturas;
 BEGIN
 
     FOR Var_asignaturas IN c_calumnos LOOP
-        titu := substr(to_char(VAr_asignaturas.n_expediente), 1, 4);
+        titu := substr(to_char(Var_asignaturas.n_expediente), 1, 4);
         NORMALIZA_ASIGNATURAS(Var_asignaturas.grupos_asignados, titu);
          FOR Var_codigo IN c_cgrupos LOOP
             select referencia into ref from asig where codigo_1=Var_codigo.codigo and titu_codigo=titu;

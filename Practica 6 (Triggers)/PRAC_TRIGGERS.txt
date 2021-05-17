@@ -1,4 +1,4 @@
---1.1
+﻿--1.1
 CREATE TABLE MENSAJES (
     codigo NUMBER(20) PRIMARY KEY,
     texto VARCHAR2(200));
@@ -113,11 +113,10 @@ INSERT INTO MENSAJES_BORRADOS VALUES (:old.codigo,:old.texto);
 END mensaje_delete;
 
 --5
-BEGIN
 BEGIN DBMS_SCHEDULER.CREATE_JOB(
 job_name => 'borrar_mensajes_eliminados',
 job_type => 'PLSQL_BLOCK',
-job_action => 'BEGIN DELETE * FROM MENSAJES_BORRADOS,
+job_action => 'BEGIN DELETE * FROM MENSAJES_BORRADOS',
 start_date => SYSDATE+1,
 repeat_interval => 'FREQ=SECONDLY;INTERVAL=120',
 enabled => TRUE);

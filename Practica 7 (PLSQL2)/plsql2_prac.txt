@@ -1,9 +1,16 @@
-﻿create or replace PACKAGE BODY PK_ASIGNACION_GRUPOS AS
+﻿--e
+create or replace PACKAGE PK_ASIGNACION_GRUPOS as
+PROCEDURE PR_ASIGNA_ASIGNADOS;
+END PK_ASIGNACION_GRUPOS;
+
+create or replace PACKAGE BODY PK_ASIGNACION_GRUPOS AS
 PROCEDURE PR_ASIGNA_ASIGNADOS IS
 
 CURSOR c_nuevo_ingreso IS SELECT A.GRUPOS_ASIGNADOS,A.NEXPEDIENTE FROM ALUMNOS_EXT A 
-JOIN NUEVO_INGRESO P ON A.DNI=P.DOCUMENTO
-WHERE REGEXP_LIKE (A.GRUPOS_ASIGNADOS,'[A-Z]');
+JOIN NUEVO_INGRESO P ON A.DOCUMENTO=P.DOCUMENTO
+where regexp_like (A.GRUPOS_ASIGNADOS,'[A-Z]');
+
+CURSOR c_asignaturas IS SELECT CODIGO,GRUPO FROM TEMP_ASIGNATURAS;
 
 TITULACION VARCHAR2(200);
 ASIG_REF VARCHAR2(200);
@@ -11,23 +18,23 @@ BEGIN
 
 FOR varAlumno in c_nuevo_ingreso loop
 
-    EXEC('DROP TABLE'+TEMP_ASIGNATURAS);
-    TITULACION:=SUBSTR(varAlumno.nexpediente,1,4);
-    NORMALIZA_ASIGNATURAS(varAlumno.grupos_asignados,TITULACION);
+TITULACION:=SUBSTR(varAlumno.nexpediente,1,4);
 
-    FOR varAsignaturas in (SELECT CODIGO,GRUPO FROM TEMP_ASIGNATURAS) loop
-        IF varAsignaturas.grupo is NULL THEN
-            INSERT INTO ERRORES 
-            VALUES (sysdate,'Asignatura sin grupo',varAsignaturas.codigo,CURSO_ACTUAL(),null,null,varAlumno.nexpediente,TITULACION);
-            ELSE
-            SELECT REFERENCIA INTO ASIG_REF 
-            FROM ASIGNATURA WHERE CODIGO=varAsignaturas.codigo;
-            UPDATE ASIGNATURAS_MATRICULA SET GRUPO_ID=varAsignaturas.grupo 
-            WHERE ASIGNATURA_REFERENCIA=ASIG_REF AND MATRICULA_EXPEDIENTE=varAlumno.nexpediente;
-        END IF;
-    END LOOP;
+NORMALIZA_ASIGNATURAS(varAlumno.grupos_asignados,TITULACION);
+
+FOR varAsignaturas in c_asignaturas loop
+
+IF varAsignaturas.grupo is NULL THEN
+INSERT INTO ERRORES VALUES (sysdate,'Asignatura sin grupo',varAsignaturas.codigo,CURSO_ACTUAL(),null,null,varAlumno.nexpediente,TITULACION);
+ELSE
+SELECT REFERENCIA INTO ASIG_REF FROM ASIGNATURA WHERE CODIGO=varAsignaturas.codigo;
+UPDATE ASIGNATURAS_MATRICULA SET GRUPO_ID=varAsignaturas.grupo WHERE ASIGNATURA_REFERENCIA=ASIG_REF AND MATRICULA_EXPEDIENTES_NEXP=varAlumno.nexpediente;
+
+END IF;
 
 END LOOP;
+
+end loop;
 
 END;
 END PK_ASIGNACION_GRUPOS;

@@ -1,0 +1,26 @@
+1.
+A que el alumno no había realizado un commit.
+2.
+Hacer una lectura errónea.
+3.
+Si, realizando un commit antes de hacer la consulta.
+4.
+Si. Se llama bloqueo de tabla.
+LOCK TABLE RESULTADO IN EXCLUSIVE MODE;
+Se desbloquea realizando un rollback o un commit.
+5.
+AUDIT INSERT TABLE ON RESULTADOS;
+SELECT * FROM DBA_OBJ_AUDIT_OPTS WHERE OBJECT_NAME = 'RESULTADO';
+6.
+Se pueden recuperar los datos cambiados de la tabla.
+Hay que tener la tecnología activada, configurando un fast recovery area y poner
+la BD en modo ARCHIVELOG. Y luego activar FLASHBACK DATABASE ALTER
+DATABASE FLASHBACK ON;
+Si, flashback también permite recuperar tablas borradas.
+7.
+Tiene tres opciones:
+RMAN → backup físico
+Backup manual → backup físico
+Utilizando Data Pump Export → backup lógico
+El más sencillo sería RMAN, debido a que hacerlo manual se tardaría más y para
+utilizar Data Pump se requiere utilizar Data Pump Import
